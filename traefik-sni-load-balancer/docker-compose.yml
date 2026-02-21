@@ -1,0 +1,21 @@
+services:
+  traefik:
+    image: traefik:v3.6
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.network=sni"
+      - "--entrypoints.tls.address=:443"
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+    ports:
+      - "4433:443"
+      - "8080:8080"
+    networks:
+      - default
+      - sni
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  sni:
+    external: true

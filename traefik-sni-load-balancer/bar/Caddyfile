@@ -1,0 +1,12 @@
+{
+  debug
+}
+
+https:// {
+    root * /srv/www
+    file_server
+    tls internal {
+      on_demand
+    }
+    log
+}

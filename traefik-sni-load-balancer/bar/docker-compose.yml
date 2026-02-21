@@ -1,0 +1,20 @@
+services:
+  bar:
+    image: caddy:2.10
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./webroot/:/srv/www
+    networks:
+      - default
+      - sni
+    labels:
+      - "traefik.enable=true"
+      # ROUTER
+      - "traefik.tcp.routers.bar.rule=HostSNI(`bar.lvh.me`)"
+      - "traefik.tcp.routers.bar.entrypoints=tls"
+      - "traefik.tcp.routers.bar.tls.passthrough=true"
+      # SERVICE
+      - "traefik.tcp.services.bar.loadbalancer.server.port=443"
+networks:
+  sni:
+    external: true
