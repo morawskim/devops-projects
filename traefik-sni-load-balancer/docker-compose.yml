@@ -4,6 +4,7 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.network=sni"
+      - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.tls.address=:443"
       - "--api.dashboard=true"
       - "--api.insecure=true"
