@@ -1,0 +1,16 @@
+tcp:
+  routers:
+    legacy:
+      rule: "HostSNI(`legacy.lvh.me`)"
+      entryPoints:
+        - tls
+      service: legacy
+      tls:
+        passthrough: true
+
+  services:
+    legacy:
+      loadBalancer:
+        servers:
+          # run ip a s docker0
+          - address: "172.17.0.1:9999"
