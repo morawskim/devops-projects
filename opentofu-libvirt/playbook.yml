@@ -1,0 +1,7 @@
+- name: "Vagrant & libvirt"
+  hosts: vagrant
+  gather_facts: true
+
+  tasks:
+    - name: Check connection
+      ansible.builtin.ping:
