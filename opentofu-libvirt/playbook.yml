@@ -1,7 +1,118 @@
 - name: "Vagrant & libvirt"
   hosts: vagrant
   gather_facts: true
+  become: true
 
   tasks:
     - name: Check connection
       ansible.builtin.ping:
+
+    # {{{ NetworkManager bridge
+    - name: NetworkManager br0
+      ansible.builtin.copy:
+        dest: /etc/NetworkManager/system-connections/br0.nmconnection
+        owner: root
+        group: root
+        mode: '0600'
+        content: |
+          [connection]
+          id=br0
+          uuid=cc37a187-4ed4-45b6-8d51-b975bb156ba1
+          type=bridge
+          interface-name=br0
+          timestamp=1775306909
+          autoconnect=true
+
+          [ethernet]
+
+          [bridge]
+          stp=false
+
+          [ipv4]
+          address1=10.0.2.16/24
+          dns=8.8.8.8;8.8.4.4;
+          gateway=10.0.2.2
+          method=auto
+
+          [ipv6]
+          addr-gen-mode=default
+          method=auto
+
+          [proxy]
+
+    - name: NetworkManager bridge-slave-eth0
+      ansible.builtin.copy:
+        dest: /etc/NetworkManager/system-connections/bridge-slave-eth0.nmconnection
+        owner: root
+        group: root
+        mode: '0600'
+        content: |
+          [connection]
+          id=bridge-slave-eth0
+          uuid=b5765c50-0ce7-4ac3-968a-cd8f994edc02
+          type=ethernet
+          controller=br0
+          interface-name=eth0
+          port-type=bridge
+
+          [ethernet]
+
+          [bridge-port]
+    - name: Set ONBOOT=no for eth0
+      ansible.builtin.lineinfile:
+        path: /etc/sysconfig/network-scripts/ifcfg-eth0
+        regexp: '^ONBOOT='
+        line: 'ONBOOT=no'
+    # }}}
+
+    # {{{ libvirt pool
+    - name: Create directory for images and disks
+      ansible.builtin.file:
+        path: /var/lib/libvirt/storage
+        state: directory
+        owner: root
+        group: root
+        mode: "0711"
+    - name: Define a new storage pool
+      community.libvirt.virt_pool:
+        command: define
+        name: storage
+        xml: |
+          <pool type='dir'>
+            <name>storage</name>
+            <target>
+              <path>/var/lib/libvirt/storage</path>
+            </target>
+          </pool>
+    - name: Start a storage pool
+      community.libvirt.virt_pool:
+        state: active
+        name: storage
+    - name: Ensure that a storage pool will be started at boot
+      community.libvirt.virt_pool:
+        autostart: true
+        name: storage
+    # }}}
+
+    # {{{ libvirt bridge network
+    - name: Define a new bridge network
+      community.libvirt.virt_net:
+        command: define
+        name: bridge
+        autostart: true
+        xml: |
+          <network connections='1'>
+            <name>bridge</name>
+            <uuid>1720fec3-e0f5-4a83-b989-70d811ffdd9d</uuid>
+            <forward mode='bridge'/>
+            <bridge name='br0'/>
+          </network>
+    - name: Start a network
+      community.libvirt.virt_net:
+        state: active
+        name: bridge
+    - name: Ensure that a network will be started at boot
+      community.libvirt.virt_net:
+        name: bridge
+        autostart: true
+    # }}}
