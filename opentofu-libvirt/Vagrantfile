@@ -75,35 +75,8 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: <<-SHELL
-    cat >/etc/yum.repos.d/opentofu.repo <<'EOF'
-[opentofu]
-name=opentofu
-baseurl=https://packages.opentofu.org/opentofu/tofu/rpm_any/rpm_any/$basearch
-repo_gpgcheck=0
-gpgcheck=1
-enabled=1
-gpgkey=https://get.opentofu.org/opentofu.gpg
-       https://packages.opentofu.org/opentofu/tofu/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-metadata_expire=300
-
-[opentofu-source]
-name=opentofu-source
-baseurl=https://packages.opentofu.org/opentofu/tofu/rpm_any/rpm_any/SRPMS
-repo_gpgcheck=0
-gpgcheck=1
-enabled=1
-gpgkey=https://get.opentofu.org/opentofu.gpg
-       https://packages.opentofu.org/opentofu/tofu/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-metadata_expire=300
-EOF
-    dnf install tofu -y
-    dnf install qemu-kvm libvirt virt-top -y
-    systemctl enable --now libvirtd
-    usermod -aG libvirt vagrant
-  SHELL
+  # config.vm.provision "shell", inline: <<-SHELL
+  #   apt-get update
+  #   apt-get install -y apache2
+  # SHELL
 end

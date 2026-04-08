@@ -2,10 +2,53 @@
   hosts: vagrant
   gather_facts: true
   become: true
+  vars:
+    user: vagrant
 
   tasks:
     - name: Check connection
       ansible.builtin.ping:
+
+    - name: Set LIBVIRT_DEFAULT_URI env
+      ansible.builtin.lineinfile:
+        path: /home/vagrant/.bash_profile
+        regexp: '^\s*export LIBVIRT_DEFAULT_URI='
+        line: "export LIBVIRT_DEFAULT_URI=qemu:///system"
+
+    # {{{ Setup KVM
+    - name: Add OpenTofu repository
+      ansible.builtin.yum_repository:
+        name: opentofu
+        description: opentofu
+        baseurl: "https://packages.opentofu.org/opentofu/tofu/rpm_any/rpm_any/$basearch"
+        gpgcheck: yes
+        repo_gpgcheck: no
+        gpgkey:
+          - https://get.opentofu.org/opentofu.gpg
+          - https://packages.opentofu.org/opentofu/tofu/gpgkey
+        enabled: yes
+        sslverify: yes
+        sslcacert: /etc/pki/tls/certs/ca-bundle.crt
+        metadata_expire: 300
+    - name: Install packages
+      ansible.builtin.package:
+        state: present
+        name:
+          - tofu
+          - qemu-kvm
+          - libvirt
+          - virt-top
+    - name: Enable and start libvirtd
+      ansible.builtin.service:
+        name: libvirtd
+        enabled: yes
+        state: started
+    - name: Add {{ user }} to libvirt group
+      ansible.builtin.user:
+        name: "{{ user }}"
+        groups: libvirt
+        append: yes
+    # }}}
 
     # {{{ NetworkManager bridge
     - name: NetworkManager br0
