@@ -1,0 +1,20 @@
+services:
+  podinfo:
+    image: stefanprodan/podinfo:6.11.2
+    networks:
+      - default
+      - rewrite
+    labels:
+      - "traefik.enable=true"
+      # ROUTER
+      - "traefik.http.routers.podinfo1.rule=Host(`podinfo1-in-docker.lvh.me`)"
+      - "traefik.http.routers.podinfo1.entrypoints=web"
+      # SERVICE
+      - "traefik.http.services.podinfo1.loadbalancer.server.port=9898"
+      # Middleware to change Host header
+      - "traefik.http.routers.podinfo1.middlewares=rewrite-host-podinfo"
+      - "traefik.http.middlewares.rewrite-host-podinfo.headers.customrequestheaders.Host=podinfo-rewrite.lvh.me"
+
+networks:
+  rewrite:
+    external: true

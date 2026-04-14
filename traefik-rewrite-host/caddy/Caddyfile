@@ -1,0 +1,9 @@
+{
+  debug
+}
+
+http://caddy.lvh.me {
+    root * /srv/www
+    file_server
+    log
+}

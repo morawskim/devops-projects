@@ -1,0 +1,22 @@
+services:
+  caddy:
+    image: caddy:2.10
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./webroot/:/srv/www
+    networks:
+      - default
+      - rewrite
+    labels:
+      - "traefik.enable=true"
+      # ROUTER
+      - "traefik.http.routers.caddy.rule=Host(`caddy-in-docker.lvh.me`)"
+      - "traefik.http.routers.caddy.entrypoints=web"
+      # SERVICE
+      - "traefik.tcp.services.caddy.loadbalancer.server.port=80"
+      # Middleware to change Host header
+      - "traefik.http.routers.caddy.middlewares=rewrite-host-caddy"
+      - "traefik.http.middlewares.rewrite-host-caddy.headers.customrequestheaders.Host=caddy.lvh.me"
+networks:
+  rewrite:
+    external: true
