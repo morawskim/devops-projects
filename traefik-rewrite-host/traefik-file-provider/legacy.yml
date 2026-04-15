@@ -1,0 +1,20 @@
+http:
+  routers:
+    legacy:
+      rule: "Host(`legacy.lvh.me`)"
+      entryPoints:
+        - web
+      service: legacy
+      middlewares:
+        - rewrite-host-legacy
+  middlewares:
+    rewrite-host-legacy:
+      headers:
+        customRequestHeaders:
+          Host: bar.lvh.me
+  services:
+    legacy:
+      loadBalancer:
+        servers:
+          # run ip a s docker0
+          - url: "http://172.17.0.1:9999"

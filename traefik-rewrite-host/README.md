@@ -64,6 +64,36 @@ curl -v 'caddy-in-docker.lvh.me:8888'
 </html>
 ```
 
+### Testing File Provider (Legacy Service)
+This setup also uses Traefik's File Provider to route traffic to a local service running outside of Docker.
+
+1. Run a local server on port `9999`:
+```bash
+nc -l -p 9999
+```
+
+2. Send a request to `legacy.lvh.me:8888`:
+```bash
+curl -v 'legacy.lvh.me:8888'
+```
+
+3. In the terminal where `nc` is running, you should see the incoming HTTP request with the rewritten `Host` header:
+```text
+GET / HTTP/1.1
+Host: bar.lvh.me
+User-Agent: curl/8.5.0
+Accept: */*
+X-Forwarded-For: 172.28.0.1
+X-Forwarded-Host: legacy.lvh.me:8888
+X-Forwarded-Port: 8888
+X-Forwarded-Proto: http
+X-Forwarded-Server: 9129c085426f
+X-Real-Ip: 172.28.0.1
+Accept-Encoding: gzip
+```
+
+![rewrite host header](./rewrite-host-header.png)
+
 #### Incorrect Host
 
 If we modify the `rewrite-host-caddy` middleware in `caddy/docker-compose.yml`
