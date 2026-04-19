@@ -1,0 +1,13 @@
+[Unit]
+Description=supervisord_exporter
+After=network.target
+
+[Service]
+User=vagrant
+Group=vagrant
+WorkingDirectory=/home/vagrant
+ExecStart=/home/vagrant/supervisord_exporter/supervisord_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
