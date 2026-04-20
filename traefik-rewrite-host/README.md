@@ -125,3 +125,42 @@ curl -v 'caddy-in-docker.lvh.me:8888'
 <
 * Connection #0 to host caddy-in-docker.lvh.me left intact
 ```
+
+### Many Virtual Hosts
+
+This example demonstrates how to handle a backend HTTP server that hosts multiple applications (Virtual Hosts) and relies on the `Host` header to distinguish between them.
+
+#### The Problem
+
+Traefik currently does not support dynamic header rewriting based on request attributes (e.g., regex captures from the original domain).
+This is a known issue:
+
+* [Traefik header transformation](https://github.com/traefik/traefik/issues/6047)
+* [Custom Variables in Proxy Headers](https://github.com/traefik/traefik/issues/5036)
+
+This scenario is common in legacy projects where a single HTTP server (like Apache or Nginx) hosts many websites/applications on one server.
+
+#### The Workaround
+
+In this demo (`/manyvhost` directory), we use a Caddy instance as an intermediate proxy between Traefik and the final backend.
+1. Traefik routes the traffic and passes the original host in `X-Forwarded-Host`.
+2. Caddy captures the subdomain from `X-Forwarded-Host` and performs the dynamic `Host` header rewrite before forwarding the request to the target server.
+
+#### Verification
+
+1. Start the manyvhost services:
+```bash
+cd manyvhost && docker compose up -d && cd ..
+```
+
+2. Test admin application:
+```bash
+curl -v 'admin5.app.lvh.me:8888'
+# You should see content from webroot-admin/index.html
+```
+
+3. Test panel application:
+```bash
+curl -v 'panel5.app.lvh.me:8888'
+# You should see content from webroot-panel/index.html
+```

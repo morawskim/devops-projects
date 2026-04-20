@@ -1,0 +1,20 @@
+{
+  debug
+}
+
+:80 {
+  @match header_regexp sub X-Forwarded-Host ^(admin|panel)5\.app\.lvh\.me
+
+  handle @match {
+    reverse_proxy caddymany:80 {
+      header_up Host {re.sub.1}.lvh.me
+      #header_up Host admin.lvh.me
+    }
+  }
+
+  log {
+    output stdout
+    format console
+    level INFO
+  }
+}

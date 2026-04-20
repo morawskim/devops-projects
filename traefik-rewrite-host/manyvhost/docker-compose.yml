@@ -1,0 +1,29 @@
+services:
+  caddymany:
+    image: caddy:2.10
+    volumes:
+      - ./Caddyfile-manyvhost:/etc/caddy/Caddyfile:ro
+      - ./webroot-admin/:/srv/www/admin
+      - ./webroot-panel/:/srv/www/panel
+    networks:
+      - default
+  caddy:
+    image: caddy:2.10
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - default
+      - rewrite
+    labels:
+      - "traefik.enable=true"
+      # ROUTER
+      - "traefik.http.routers.podinfo1.rule=HostRegexp(`(admin|panel)5.app.lvh.me`)"
+      - "traefik.http.routers.podinfo1.entrypoints=web"
+      # SERVICE
+      - "traefik.http.services.podinfo1.loadbalancer.server.port=80"
+      # Middleware to change Host header
+      # - "traefik.http.routers.podinfo1.middlewares=rewrite-host-podinfo"
+      # - "traefik.http.middlewares.rewrite-host-podinfo.headers.customrequestheaders.X-Forwarded-Host=overwrite.lvh.me"
+networks:
+  rewrite:
+    external: true

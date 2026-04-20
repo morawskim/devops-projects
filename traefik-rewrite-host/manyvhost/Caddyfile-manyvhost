@@ -1,0 +1,15 @@
+{
+  debug
+}
+
+http://admin.lvh.me {
+    root * /srv/www/admin
+    file_server
+    log
+}
+
+http://panel.lvh.me {
+    root * /srv/www/panel
+    file_server
+    log
+}
