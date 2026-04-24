@@ -17,13 +17,13 @@ services:
     labels:
       - "traefik.enable=true"
       # ROUTER
-      - "traefik.http.routers.podinfo1.rule=HostRegexp(`(admin|panel)5.app.lvh.me`)"
-      - "traefik.http.routers.podinfo1.entrypoints=web"
+      - "traefik.http.routers.manyvhost.rule=HostRegexp(`(admin|panel)5.app.lvh.me`)"
+      - "traefik.http.routers.manyvhost.entrypoints=web"
       # SERVICE
-      - "traefik.http.services.podinfo1.loadbalancer.server.port=80"
+      - "traefik.http.services.manyvhost.loadbalancer.server.port=80"
       # Middleware to change Host header
-      # - "traefik.http.routers.podinfo1.middlewares=rewrite-host-podinfo"
-      # - "traefik.http.middlewares.rewrite-host-podinfo.headers.customrequestheaders.X-Forwarded-Host=overwrite.lvh.me"
+      # - "traefik.http.routers.manyvhost.middlewares=rewrite-host-manyvhost"
+      # - "traefik.http.middlewares.rewrite-host-manyvhost.headers.customrequestheaders.X-Forwarded-Host=overwrite.lvh.me"
 networks:
   rewrite:
     external: true
