@@ -6,7 +6,9 @@ It can be used to identify which processes (e.g. cron jobs) are writing data to 
 
 To start monitoring the `/var/www/html` directory (recursively, so changes in subdirectories like `foo` will also be tracked) and identify which processes are writing to it, run:
 ```bash
-sudo auditctl -a always,exit -F path=/var/www/html -F perm=w -F key=var_www_write
+sudo auditctl -a never,exit -F dir=/var/www/html/bar
+sudo auditctl -a never,exit -F dir=/var/www/html/vendor
+sudo auditctl -a always,exit -F arch=b64 -F path=/var/www/html -F perm=w -F key=var_www_write
 ```
 
 To search for audit logs tagged with `var_www_write` (all write actions in `/var/www/html` and its subdirectories), use:

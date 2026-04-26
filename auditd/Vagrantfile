@@ -74,8 +74,10 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
-    mkdir -p /var/www/html/foo
-    auditctl -a always,exit -F path=/var/www/html -F perm=w -F key=var_www_write
+    mkdir -p /var/www/html/{foo,bar,vendor}
+    auditctl -a never,exit -F dir=/var/www/html/bar
+    auditctl -a never,exit -F dir=/var/www/html/vendor
+    auditctl -a always,exit -F arch=b64 -F path=/var/www/html -F perm=w -F key=var_www_write
     dnf install -y php
   SHELL
   config.vm.provision "file", source: "write-file.php", destination: "/home/vagrant/write-file.php", run: "always"

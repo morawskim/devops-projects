@@ -19,3 +19,16 @@ $handler = fopen('/var/www/html/foo/test-fopen.txt', 'w+');
 fwrite($handler, 'lorem');
 fwrite($handler, PHP_EOL);
 fclose($handler);
+
+
+echo "file_put_contents - should be ignored by auditd" . PHP_EOL;
+file_put_contents(
+    '/var/www/html/bar/ignore.txt',
+    'should be ignored by auditd' . PHP_EOL,
+);
+echo "file_put_contents append - should be ignored by auditd" . PHP_EOL;
+file_put_contents(
+    '/var/www/html/vendor/ignore.txt',
+    'should be ignored by auditd' . PHP_EOL,
+    FILE_APPEND
+);
