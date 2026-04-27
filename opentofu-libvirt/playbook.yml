@@ -1,9 +1,9 @@
 - name: "Vagrant & libvirt"
-  hosts: vagrant
+  hosts: lima
   gather_facts: true
   become: true
   vars:
-    user: vagrant
+    user: rocky
     storagePoolPath: /var/lib/libvirt/storage
 
   tasks:
@@ -12,7 +12,7 @@
 
     - name: Set LIBVIRT_DEFAULT_URI env
       ansible.builtin.lineinfile:
-        path: /home/vagrant/.bash_profile
+        path: /home/{{user}}/.bash_profile
         regexp: '^\s*export LIBVIRT_DEFAULT_URI='
         line: "export LIBVIRT_DEFAULT_URI=qemu:///system"
 
@@ -39,6 +39,9 @@
           - qemu-kvm
           - libvirt
           - virt-top
+          - libguestfs-bash-completion
+          - libguestfs
+          - guestfs-tools
     - name: Enable and start libvirtd
       ansible.builtin.service:
         name: libvirtd
@@ -73,9 +76,9 @@
           stp=false
 
           [ipv4]
-          address1=10.0.2.16/24
+          address1=192.168.5.16/24
           dns=8.8.8.8;8.8.4.4;
-          gateway=10.0.2.2
+          gateway=192.168.5.2
           method=auto
 
           [ipv6]
