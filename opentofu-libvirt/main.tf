@@ -7,11 +7,11 @@ terraform {
 }
 
 provider "libvirt" {
-  uri   = "qemu+ssh://vagrant@127.0.0.1:2222/system?keyfile=.vagrant/machines/default/virtualbox/private_key"
+  uri = "qemu+sshcmd://lima-libvirt/system"
 }
 
 locals {
-  pool_name = "storage"
+  pool_name    = "storage"
   netowrk_name = "bridge"
 }
 
@@ -23,39 +23,21 @@ output "host_memory_gb" {
 }
 
 
-# Download cirros cloud image
-resource "libvirt_volume" "cirros_image" {
-  name   = "cirros.qcow2"
-  pool   = local.pool_name
-  target = {
-    format = {
-      type = "qcow2"
-    }
-  }
-
-  create = {
-    content = {
-      # cirros cloud image
-      url = "https://download.cirros-cloud.net/0.6.3/cirros-0.6.3-x86_64-disk.img"
-    }
-  }
-}
-
 # Create boot disk for VM1 (uses base image as backing store)
 resource "libvirt_volume" "vm1_disk" {
-  name   = "vm1-disk.qcow2"
-  pool   = local.pool_name
+  name = "vm1-disk.qcow2"
+  pool = local.pool_name
   target = {
     format = {
       type = "qcow2"
     }
   }
 
-  # Start with 2GB, will grow as needed
-  capacity = 2147483648 # 2GB in bytes
+  # Start with 20GB, will grow as needed
+  capacity = 21474836480 # 20GB in bytes
 
   backing_store = {
-    path   = libvirt_volume.cirros_image.path
+    path = "/var/lib/libvirt/storage/ubuntu24lts.img"
     format = {
       type = "qcow2"
     }
@@ -70,6 +52,7 @@ resource "libvirt_cloudinit_disk" "vm1_init" {
   # User-data
   user_data = <<-EOF
     #cloud-config
+    password: asdfqwer
     # see https://docs.cloud-init.io/en/latest/reference/modules.html
     #
     # lock account and sudo
@@ -84,8 +67,8 @@ resource "libvirt_cloudinit_disk" "vm1_init" {
     ssh_pwauth: false
     disable_root: true
     # Add SSH public key for key-based auth
-    ssh_authorized_keys:
-      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0/Ho... your-key-here
+    #ssh_authorized_keys:
+    #  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC0/Ho... your-key-here
 
     # Set timezone
     timezone: UTC
@@ -102,12 +85,12 @@ resource "libvirt_cloudinit_disk" "vm1_init" {
   network_config = <<-EOF
     version: 2
     ethernets:
-      eth0:
+      enp1s0:
         match:
-          name: "eth0"
+          name: "enp1s0"
         dhcp4: no
-        addresses: [10.0.2.20/24]
-        gateway4: 10.0.2.2
+        addresses: [192.168.5.20/24]
+        gateway4: 192.168.5.2
         nameservers:
           addresses: [8.8.8.8,8.8.4.4]
   EOF
@@ -128,19 +111,18 @@ resource "libvirt_volume" "vm1_cloudinit" {
 }
 
 resource "libvirt_domain" "vm1" {
-  name      = "vm1"
-  memory    = 512
-  memory_unit      = "MiB"
-  vcpu      = 1
-  autostart = true
-  running   = true
-  type      = "kvm"
+  name        = "vm1"
+  memory      = 512
+  memory_unit = "MiB"
+  vcpu        = 1
+  autostart   = true
+  running     = true
+  type        = "kvm"
 
   os = {
     type         = "hvm"
     type_arch    = "x86_64"
     type_machine = "q35"
-    kernel_args  = "console=ttyS0 root=/dev/vda1"
   }
 
   devices = {
@@ -193,6 +175,14 @@ resource "libvirt_domain" "vm1" {
         type        = "pty"
         target_port = "0"
         target_type = "serial"
+      }
+    ]
+    graphics = [
+      {
+        vnc = {
+          auto_port = true
+          listen    = "127.0.0.1"
+        }
       }
     ]
   }
