@@ -8,7 +8,7 @@ To start monitoring the `/var/www/html` directory (recursively, so changes in su
 ```bash
 sudo auditctl -a never,exit -F dir=/var/www/html/bar
 sudo auditctl -a never,exit -F dir=/var/www/html/vendor
-sudo auditctl -a always,exit -F arch=b64 -F path=/var/www/html -F perm=w -F key=var_www_write
+sudo auditctl -a always,exit -F arch=b64 -F dir=/var/www/html -F perm=w -F key=var_www_write
 ```
 
 To search for audit logs tagged with `var_www_write` (all write actions in `/var/www/html` and its subdirectories), use:
