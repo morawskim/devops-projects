@@ -8,6 +8,8 @@ Group=vagrant
 WorkingDirectory=/home/vagrant
 ExecStart=/home/vagrant/supervisord_exporter/supervisord_exporter
 Restart=always
+RestartSec=10
+Type=simple
 
 [Install]
 WantedBy=multi-user.target

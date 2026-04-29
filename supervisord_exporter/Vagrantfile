@@ -75,19 +75,26 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "supervisord_exporter.service", destination: "/home/vagrant/supervisord_exporter.service", run: "always"
   config.vm.provision "file", source: "supervisor.ini", destination: "/home/vagrant/supervisor.ini", run: "always"
   config.vm.provision "shell", inline: <<-SHELL
-    dnf install -y epel-release vim golang git bash-completion
+    dnf install -y epel-release vim golang git bash-completion policycoreutils-python-utils
     dnf install -y supervisor
     cp /home/vagrant/supervisord_exporter.service /etc/systemd/system/supervisord_exporter.service
     ln -fs /home/vagrant/supervisor.ini /etc/supervisord.d/custom.ini
     systemctl enable --now supervisord
     [ ! -d "/home/vagrant/supervisord_exporter" ] && sudo -u vagrant git clone https://github.com/morawskim/supervisord_exporter.git /home/vagrant/supervisord_exporter
     cd /home/vagrant/supervisord_exporter && sudo -u vagrant go build -o /home/vagrant/supervisord_exporter/supervisord_exporter /home/vagrant/supervisord_exporter
+
+    semanage fcontext -a -t bin_t /home/vagrant/supervisord_exporter/supervisord_exporter
+    restorecon -v /home/vagrant/supervisord_exporter/supervisord_exporter
+
     systemctl daemon-reload
 
     dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
     dnf -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
     systemctl --now enable docker
     usermod -a -G docker vagrant
+
+    firewall-cmd --add-port=9876/tcp --permanent
+    firewall-cmd --reload
   SHELL
 
   config.vm.provision "shell", inline: 'systemctl restart supervisord', run: "always"
