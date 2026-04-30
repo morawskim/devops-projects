@@ -6,3 +6,13 @@ This project demonstrates how to set up a Traefik-based load balancer that uses 
 
 This project demonstrates how Traefik can rewrite the `Host` header before forwarding requests to backend services.
 It includes examples of routing traffic based on one domain and modifying it to match the expected value of the target application.
+
+## [auditd](auditd)
+
+This project uses auditd to monitor and log write operations within specific directories. 
+It helps identify which processes are performing file modifications, making it useful for auditing and debugging.
+
+## [supervisord_exporter](supervisord_exporter)
+
+This project provides a setup for monitoring Supervisor processes using Prometheus. 
+It includes configurations for the exporter to collect metrics via Unix sockets or HTTP.
