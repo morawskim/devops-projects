@@ -81,7 +81,10 @@ Vagrant.configure("2") do |config|
     ln -fs /home/vagrant/supervisor.ini /etc/supervisord.d/custom.ini
     systemctl enable --now supervisord
     [ ! -d "/home/vagrant/supervisord_exporter" ] && sudo -u vagrant git clone https://github.com/morawskim/supervisord_exporter.git /home/vagrant/supervisord_exporter
-    cd /home/vagrant/supervisord_exporter && sudo -u vagrant go build -o /home/vagrant/supervisord_exporter/supervisord_exporter /home/vagrant/supervisord_exporter
+    cd /home/vagrant/supervisord_exporter && git checkout -b unixsocket origin/unixsocket && sudo -u vagrant go build -o /home/vagrant/supervisord_exporter/supervisord_exporter /home/vagrant/supervisord_exporter
+    cat >/etc/sysconfig/supervisord_exporter <<'EOF'
+SUPERVISORD_EXPORTER_ARGS=""
+EOF
 
     semanage fcontext -a -t bin_t /home/vagrant/supervisord_exporter/supervisord_exporter
     restorecon -v /home/vagrant/supervisord_exporter/supervisord_exporter
