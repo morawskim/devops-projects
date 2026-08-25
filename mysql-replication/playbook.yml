@@ -1,0 +1,63 @@
+- name: create master user
+  hosts: localhost
+  gather_facts: no
+  connection: local
+  vars:
+    mysql_root_password: password
+    mysqld_master_port: 3307
+    mysqld_replication_port: 3308
+
+    mysql_primary_host: mysql
+    mysql_replication_user: replication
+    mysql_replication_password: "uGhoo1ob"
+  tasks:
+    - name: Create mysql user for replication
+      community.mysql.mysql_user:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: "{{ mysqld_master_port }}"
+        name: replication
+        plugin: caching_sha2_password
+        plugin_auth_string: "{{ mysql_replication_password }}"
+        host: "%"
+        priv: "*.*:REPLICATION CLIENT,REPLICATION SLAVE,REPLICATION_SLAVE_ADMIN,SELECT"
+        # At minimum, a MySQL replication user must have the REPLICATION SLAVE privilege
+        # priv: "*.*:REPLICATION SLAVE"
+        update_password: "on_create"
+        state: present
+
+    - name: Fetch master binlog filename and position
+      ansible.mysql.mysql_replication:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: "{{ mysqld_master_port }}"
+        mode: getprimary
+      register: master
+    - name: Print master position
+      debug:
+        msg: "Master data: {{ master }}"
+
+
+    - name: Configure replication on new replica
+      ansible.mysql.mysql_replication:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: "{{ mysqld_replication_port }}"
+        mode: changeprimary
+        primary_host: "{{ mysql_primary_host }}"
+        primary_user: "{{ mysql_replication_user }}"
+        primary_password: "{{ mysql_replication_password }}"
+        primary_log_file: "{{ master.File }}"
+        primary_log_pos: "{{ master.Position }}"
+        primary_ssl: 1
+    - name: Run start replica and fail the task on errors
+      ansible.mysql.mysql_replication:
+        login_user: "root"
+        login_password: "{{ mysql_root_password }}"
+        login_host: "127.0.0.1"
+        login_port: "{{ mysqld_replication_port }}"
+        mode: startreplica
+        fail_on_error: true

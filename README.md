@@ -16,3 +16,7 @@ It helps identify which processes are performing file modifications, making it u
 
 This project provides a setup for monitoring Supervisor processes using Prometheus. 
 It includes configurations for the exporter to collect metrics via Unix sockets or HTTP.
+
+## [mysql-replication](mysql-replication)
+
+This project demonstrates how to set up and configure MySQL Primary-Replica replication using Docker Compose and Ansible.

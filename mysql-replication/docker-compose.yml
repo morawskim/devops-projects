@@ -1,0 +1,28 @@
+name: replication
+services:
+  mysql:
+    image: mysql:8.4
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+        - ./mysql:/var/lib/mysql
+        - ./primary.cnf:/etc/mysql/conf.d/primary.cnf
+    environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: dbname
+        MYSQL_USER: dbname
+        MYSQL_PASSWORD: userpassword
+    ports:
+        - "3307:3306"
+  replica:
+    image: mysql:8.4
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+        - ./replica:/var/lib/mysql
+        - ./replica.cnf:/etc/mysql/conf.d/replica.cnf
+    environment:
+        MYSQL_ROOT_PASSWORD: password
+        MYSQL_DATABASE: dbname
+        MYSQL_USER: dbname
+        MYSQL_PASSWORD: userpassword
+    ports:
+        - "3308:3306"

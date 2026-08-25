@@ -1,0 +1,5 @@
+[mysqld]
+server-id = 11
+binlog_do_db = dbname
+#log_bin = /var/lib/mysql/binlog
+#relay-log = /var/lib/mysql/relay-bin
